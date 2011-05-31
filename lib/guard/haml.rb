@@ -5,7 +5,7 @@ require 'haml'
 module Guard
   class Haml < Guard
     
-    VERSION = '0.1.2'
+    VERSION = '0.1.3a'
     
     def initialize(watchers = [], options = {})
       @watchers, @options = watchers, options
