@@ -43,15 +43,25 @@ module Guard
     end
   
     def run_on_change(paths)
-      paths.each do |file|
+      changed_files = paths.map do |file|
         output_file = get_output(file)
         begin
           File.open(output_file, 'w') { |f| f.write(compile_haml(file)) }
           puts "# compiled haml in '#{file}' to html in '#{output_file}'"
+          output_file
         rescue ::Haml::Error => e
           ::Guard::UI.error "Haml > #{e.message}"
+          nil
         end
-      end
+      end.compact
+      notify(changed_files)
     end
+
+    def notify(changed_files)
+      ::Guard.guards.reject{ |guard| guard == self }.each do |guard|
+        paths = Watcher.match_files(guard, changed_files)
+        guard.run_on_change(paths) unless paths.empty?
+      end 
+    end 
   end
 end
