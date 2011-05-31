@@ -28,11 +28,20 @@ module Guard
     end
   
     def run_on_change(paths)
-      paths.each do |file|
+      changed_files = paths.map do |file|
         output_file = file.split('.')[0..-2].join('.')
         File.open(output_file, 'w') { |f| f.write(compile_haml(file)) }
         puts "# compiled haml in '#{file}' to html in '#{output_file}'"
+        output_file
       end
+      notify(changed_files)
     end
+
+    def notify(changed_files)
+      ::Guard.guards.reject{ |guard| guard == self }.each do |guard|
+        paths = Watcher.match_files(guard, changed_files)
+        guard.run_on_change(paths) unless paths.empty?
+      end 
+    end 
   end
 end
