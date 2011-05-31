@@ -30,8 +30,12 @@ module Guard
     def run_on_change(paths)
       paths.each do |file|
         output_file = file.split('.')[0..-2].join('.')
-        File.open(output_file, 'w') { |f| f.write(compile_haml(file)) }
-        puts "# compiled haml in '#{file}' to html in '#{output_file}'"
+        begin
+          File.open(output_file, 'w') { |f| f.write(compile_haml(file)) }
+          puts "# compiled haml in '#{file}' to html in '#{output_file}'"
+        rescue ::Haml::Error => e
+          ::Guard::UI.error "Haml > #{e.message}"
+        end
       end
     end
   end
